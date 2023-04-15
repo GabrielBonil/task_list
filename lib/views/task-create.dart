@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class TaskCreatePage extends StatefulWidget {
@@ -8,18 +9,22 @@ class TaskCreatePage extends StatefulWidget {
 class _TaskCreatePageState extends State<TaskCreatePage> {
   var formKey = GlobalKey<FormState>();
 
+  String name = '';
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
   //Variáveis para o dropdown de prioridade
   final itens = ["baixa", "média", "alta"];
-  String? valorPrioridade = 'baixa';
+  String? valorPrioridade;
 
   //Variáveis para o DataPicker
   late DateTime dataSelecionada;
 
-  //InitState unicamente para selecionar a data de hoje/agora.
+  //InitState para selecionar a data de hoje/agora e deixar pré-fixado a prioridade baixa.
   @override
   void initState() {
     super.initState();
     dataSelecionada = DateTime.now();
+    valorPrioridade = itens[0]; //setState não necessário
   }
 
   //Selecionar a data, função
@@ -45,7 +50,7 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
       formKey.currentState!.save();
 
       //salvar os dados no banco de dados...
-      // firestore.add({'name':'task...'});
+      firestore.collection('tasks').add({'name':name, 'finished': false});
 
       Navigator.of(context).pop();
     }
@@ -78,7 +83,7 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
               decoration: InputDecoration(
                 hintText: "O que precisa fazer?",
               ),
-              onSaved: (value) {},
+              onSaved: (newValue) => name = newValue!,
               validator: validarTarefa,
             ),
 
