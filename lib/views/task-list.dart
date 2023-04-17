@@ -15,7 +15,7 @@ class TaskListPage extends StatelessWidget {
         stream: firestore
             .collection('tasks')
             //.where('finished', isEqualTo: 'false')
-            .orderBy('name')
+            .orderBy('name', /*descending: true*/)
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {

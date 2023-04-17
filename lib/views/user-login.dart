@@ -34,7 +34,11 @@ class _UserLoginPageState extends State<UserLoginPage> {
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
 
-      Navigator.of(context).popAndPushNamed('/task-list'); //Talvez tenha que mudar o tipo de troca depois
+      // Navigator.of(context).popAndPushNamed('/task-list'); //Talvez tenha que mudar o tipo de troca depois
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        '/task-list',
+        ModalRoute.withName('/'),
+      );
     }
   }
 
@@ -54,7 +58,9 @@ class _UserLoginPageState extends State<UserLoginPage> {
               decoration: InputDecoration(
                 // icon: Icon(Icons.people_alt_rounded),
                 hintText: "E-mail",
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.black),),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.black),
+                ),
               ),
               onSaved: (newValue) {},
               // autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -67,10 +73,13 @@ class _UserLoginPageState extends State<UserLoginPage> {
               maxLength: 50,
               decoration: InputDecoration(
                 // icon: Icon(Icons.lock),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.black),),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.black),
+                ),
                 hintText: "Senha",
                 suffixIcon: IconButton(
-                  icon: Icon(mostrarSenha ? Icons.visibility : Icons.visibility_off),
+                  icon: Icon(
+                      mostrarSenha ? Icons.visibility : Icons.visibility_off),
                   onPressed: () {
                     setState(() {
                       mostrarSenha = !mostrarSenha;
