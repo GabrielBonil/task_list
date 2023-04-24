@@ -21,7 +21,8 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
 
   //Variáveis para o DataPicker
   late DateTime dataSelecionada;
-  late TextEditingController dataController = TextEditingController(text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
+  late TextEditingController dataController = TextEditingController(
+      text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
   // late TextEditingController dataController;
 
   //InitState para selecionar a data de hoje/agora e deixar pré-fixado a prioridade baixa.
@@ -159,6 +160,9 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
                   child: Icon(Icons.calendar_today),
                 ),
               ),
+              onTap: () {
+                selecionarData(context);
+              },
             ),
 
             // Botão salvar

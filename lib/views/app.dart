@@ -8,6 +8,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false, // definindo a propriedade para false
       routes: {
         '/task-list': (context) => TaskListPage(),
         '/task-create':(context) => TaskCreatePage(),
