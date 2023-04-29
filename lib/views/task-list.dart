@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,6 +11,15 @@ class TaskListPage extends StatefulWidget {
 
 class _TaskListPageState extends State<TaskListPage> {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
+  FirebaseAuth auth = FirebaseAuth.instance;
+
+  void update(String id, bool finished) {
+    firestore.collection('tasks').doc(id).update({'finished': finished});
+  }
+
+  void delete(String id) {
+    firestore.collection('tasks').doc(id).delete();
+  }
 
   final ordenar = ['name', 'priorityIndex', 'date'];
   var ordenarDropdown;
@@ -30,7 +40,7 @@ class _TaskListPageState extends State<TaskListPage> {
           //Botão Dropdown que organiza como vai ser ordenado os itens
           DropdownButton(
             focusColor: Colors.transparent,
-            underline: SizedBox.shrink(),
+            underline: const SizedBox.shrink(),
             value: ordenarDropdown,
             items: ordenar.map((e) {
               return DropdownMenuItem<String>(
@@ -77,7 +87,7 @@ class _TaskListPageState extends State<TaskListPage> {
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return CircularProgressIndicator(); //bolinha que fica girando
+            return const CircularProgressIndicator(); //bolinha que fica girando
           }
 
           var tasks = snapshot.data!.docs;
@@ -85,7 +95,14 @@ class _TaskListPageState extends State<TaskListPage> {
           return ListView(
             children: tasks
                 .map(
-                  (task) => CheckboxListTile(
+                  (task) => Dismissible(
+                    background: Container(
+                      color: Colors.red,
+                    ),
+                    key: Key(task.id),
+                    direction: DismissDirection.startToEnd,
+                    onDismissed: (_) => delete(task.id),
+                    child: CheckboxListTile(
                       title: Text(task['name']),
                       // secondary: Icon(Icons.description),
                       value: task['finished'],
@@ -105,7 +122,9 @@ class _TaskListPageState extends State<TaskListPage> {
                           ),
                         ],
                       ),
-                      onChanged: null),
+                      onChanged: (value) => update(task.id, value!),
+                    ),
+                  ),
                 )
                 .toList(),
           );
@@ -113,7 +132,7 @@ class _TaskListPageState extends State<TaskListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.of(context).pushNamed('/task-create'),
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }

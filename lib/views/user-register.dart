@@ -2,17 +2,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 
-class UserLoginPage extends StatefulWidget {
+class UserRegisterPage extends StatefulWidget {
   @override
-  State<UserLoginPage> createState() => _UserLoginPageState();
+  State<UserRegisterPage> createState() => _UserRegisterPageState();
 }
 
-class _UserLoginPageState extends State<UserLoginPage> {
+class _UserRegisterPageState extends State<UserRegisterPage> {
   var mostrarSenha = false;
-  String email = '';
-  String password = '';
 
   FirebaseAuth auth = FirebaseAuth.instance;
+
+  String email = '';
+  String password = '';
 
   String? validarSenha(String? value) {
     if (value == null || value.isEmpty || value.length < 6) {
@@ -20,7 +21,7 @@ class _UserLoginPageState extends State<UserLoginPage> {
     }
 
     setState(() {
-      email = value;
+      password = value;
     });
     return null;
   }
@@ -33,27 +34,28 @@ class _UserLoginPageState extends State<UserLoginPage> {
     if (!EmailValidator.validate(value)) {
       return 'Digite um E-mail valido!';
     }
-    
+
     setState(() {
-      password = value;
+      email = value;
     });
     return null;
   }
 
   var formKey = GlobalKey<FormState>();
 
-  void logar(BuildContext context) async{
+  void register(BuildContext context) async {
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
-      
+
       try {
-        await auth.signInWithEmailAndPassword(email: email, password: password);
-      // Navigator.of(context).popAndPushNamed('/task-list'); //Talvez tenha que mudar o tipo de troca depois
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/task-list',
-        ModalRoute.withName('/'),
-      );
-      } catch (e){
+        await auth.createUserWithEmailAndPassword(email: email, password: password);
+        
+        // Navigator.of(context).popAndPushNamed('/task-list'); //Talvez tenha que mudar o tipo de troca depois
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/user-login',
+          ModalRoute.withName('/'),
+        );
+      } catch (e) {
         print(e);
       }
     }
@@ -63,7 +65,7 @@ class _UserLoginPageState extends State<UserLoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Login"),
+        title: const Text("Register"),
       ),
       body: Form(
         key: formKey,
@@ -72,7 +74,7 @@ class _UserLoginPageState extends State<UserLoginPage> {
             //E-mail
             TextFormField(
               maxLength: 50,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 // icon: Icon(Icons.people_alt_rounded),
                 hintText: "E-mail",
                 enabledBorder: UnderlineInputBorder(
@@ -90,7 +92,7 @@ class _UserLoginPageState extends State<UserLoginPage> {
               maxLength: 50,
               decoration: InputDecoration(
                 // icon: Icon(Icons.lock),
-                enabledBorder: const UnderlineInputBorder(
+                enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.black),
                 ),
                 hintText: "Senha",
@@ -108,13 +110,13 @@ class _UserLoginPageState extends State<UserLoginPage> {
               // autovalidateMode: AutovalidateMode.onUserInteraction,
             ),
 
-            //Botão Logar
+            //Botão Registrar
             Container(
               width: MediaQuery.of(context).size.width -
                   40, //width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => logar(context),
-                child: const Text("Logar"),
+                onPressed: () => register(context),
+                child: Text("Registrar"),
               ),
             ),
           ],

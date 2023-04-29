@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -13,6 +14,7 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
   String name = '';
   String description = '';
   FirebaseFirestore firestore = FirebaseFirestore.instance;
+  FirebaseAuth auth = FirebaseAuth.instance;
 
   //Variáveis para o dropdown de prioridade
   final itens = ["baixa", "média", "alta"];
@@ -64,7 +66,8 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
         'priority': valorPrioridade,
         'priorityIndex': priorityIndex,
         'description': description,
-        'date': dataSelecionada
+        'date': dataSelecionada,
+        'uid': auth.currentUser!.uid,
       });
 
       Navigator.of(context).pop();
@@ -94,7 +97,7 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
               autovalidateMode: AutovalidateMode.onUserInteraction,
               maxLines: 1,
               maxLength: 30,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Nome',
                 hintText: "Nome",
               ),
@@ -108,7 +111,7 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
               minLines: 1,
               maxLines: 5,
               maxLength: 200,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Descrição',
                 hintText: "Descrição",
               ),
@@ -131,7 +134,7 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
                   priorityIndex = itens.indexOf(valorPrioridade!);
                 });
               },
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Prioridade',
               ),
             ),
@@ -157,7 +160,7 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
                   onTap: () {
                     selecionarData(context);
                   },
-                  child: Icon(Icons.calendar_today),
+                  child: const Icon(Icons.calendar_today),
                 ),
               ),
               onTap: () {
@@ -171,7 +174,7 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
                   40, //width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => salvar(context),
-                child: Text("Salvar"),
+                child: const Text("Salvar"),
               ),
             )
           ],
