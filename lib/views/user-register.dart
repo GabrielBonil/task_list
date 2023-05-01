@@ -1,3 +1,4 @@
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
@@ -48,15 +49,24 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
       formKey.currentState!.save();
 
       try {
-        await auth.createUserWithEmailAndPassword(email: email, password: password);
-        
+        await auth.createUserWithEmailAndPassword(
+            email: email, password: password);
+
         // Navigator.of(context).popAndPushNamed('/task-list'); //Talvez tenha que mudar o tipo de troca depois
         Navigator.of(context).pushNamedAndRemoveUntil(
           '/user-login',
           ModalRoute.withName('/'),
         );
       } catch (e) {
-        print(e);
+        Fluttertoast.showToast(
+          msg: "Erro ao fazer login: ${e.toString()}",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 5,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
       }
     }
   }
@@ -117,6 +127,15 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
               child: ElevatedButton(
                 onPressed: () => register(context),
                 child: Text("Registrar"),
+              ),
+            ),
+            Container(
+              width: MediaQuery.of(context).size.width -
+                  40, //width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () =>
+                    Navigator.of(context).popAndPushNamed('/user-login'),
+                child: const Text("Logar"),
               ),
             ),
           ],

@@ -1,8 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
+import 'package:task_list/components/myListView.dart';
 
 class TaskListPage extends StatefulWidget {
   @override
@@ -10,25 +9,20 @@ class TaskListPage extends StatefulWidget {
 }
 
 class _TaskListPageState extends State<TaskListPage> {
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
   FirebaseAuth auth = FirebaseAuth.instance;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  void update(String id, bool finished) {
-    firestore.collection('tasks').doc(id).update({'finished': finished});
-  }
-
-  void delete(String id) {
-    firestore.collection('tasks').doc(id).delete();
-  }
-
-  final ordenar = ['name', 'priorityIndex', 'date'];
-  var ordenarDropdown;
+  final ordenar = ['nome', 'prioridade', 'data', 'finalizados', 'pendentes'];
+  String ordenarDropdown = 'name';
   var ordenarSeta = false;
-  var pesquisar;
+  var finalizados = false;
+  var pendentes = false;
+  String pesquisar = '';
+  var dropdownValue;
 
   @override
   void initState() {
-    ordenarDropdown = ordenar[0];
+    dropdownValue = ordenar[0];
   }
 
   @override
@@ -41,7 +35,7 @@ class _TaskListPageState extends State<TaskListPage> {
           DropdownButton(
             focusColor: Colors.transparent,
             underline: const SizedBox.shrink(),
-            value: ordenarDropdown,
+            value: dropdownValue,
             items: ordenar.map((e) {
               return DropdownMenuItem<String>(
                 value: e,
@@ -50,8 +44,40 @@ class _TaskListPageState extends State<TaskListPage> {
             }).toList(),
             onChanged: (newValue) {
               setState(() {
-                ordenarDropdown = newValue;
+                dropdownValue = newValue;
               });
+              finalizados = false;
+              pendentes = false;
+              switch (newValue) {
+                case 'nome':
+                  setState(() {
+                    ordenarDropdown = 'name';
+                  });
+                  break;
+                case 'prioridade':
+                  setState(() {
+                    ordenarDropdown = 'priorityIndex';
+                  });
+                  break;
+                case 'data':
+                  setState(() {
+                    ordenarDropdown = 'date';
+                  });
+                  break;
+                case 'finalizados':
+                  setState(() {
+                    finalizados = true;
+                    ordenarDropdown = 'name';
+                  });
+                  break;
+                case 'pendentes':
+                  setState(() {
+                    pendentes = true;
+                    ordenarDropdown = 'name';
+                  });
+                  break;
+                default:
+              }
             },
           ),
 
@@ -66,68 +92,81 @@ class _TaskListPageState extends State<TaskListPage> {
           ),
 
           //Pesquisa
-          Container(
+          SizedBox(
             width: 200,
             child: TextField(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 // labelText: 'Pesquisa',
                 hintText: 'Pesquisar',
                 border: InputBorder.none,
               ),
-              onChanged: (value) => pesquisar = value,
+              onChanged: (value) {
+                setState(() {
+                  pesquisar = value;
+                });
+              },
             ),
           ),
+          IconButton(
+              onPressed: () => Navigator.of(context).pushNamed('/user-login'),
+              icon: const Icon(Icons.perm_identity))
         ],
       ),
       body: StreamBuilder(
         stream: firestore
             .collection('tasks')
-            //.where('finished', isEqualTo: 'false')
-            .orderBy(ordenarDropdown, descending: ordenarSeta)
+            .where('uid', isEqualTo: auth.currentUser!.uid)
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const CircularProgressIndicator(); //bolinha que fica girando
+            return const CircularProgressIndicator();
           }
 
           var tasks = snapshot.data!.docs;
 
-          return ListView(
-            children: tasks
-                .map(
-                  (task) => Dismissible(
-                    background: Container(
-                      color: Colors.red,
-                    ),
-                    key: Key(task.id),
-                    direction: DismissDirection.startToEnd,
-                    onDismissed: (_) => delete(task.id),
-                    child: CheckboxListTile(
-                      title: Text(task['name']),
-                      // secondary: Icon(Icons.description),
-                      value: task['finished'],
-                      subtitle: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              task['description'],
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              DateFormat('dd/MM/yyyy')
-                                  .format(task['date'].toDate()),
-                              textAlign: TextAlign.right,
-                            ),
-                          ),
-                        ],
-                      ),
-                      onChanged: (value) => update(task.id, value!),
-                    ),
-                  ),
-                )
-                .toList(),
-          );
+          var listaTasks = [];
+          for (var task in tasks){
+            listaTasks.add(task);
+          }
+
+          var listaAux = [];
+          if (finalizados || pendentes) {
+            if (finalizados) {
+              for (var task in listaTasks) {
+                if (task.data()['finished'] == true) {
+                  listaAux.add(task);
+                }
+              }
+            } else {
+              for (var task in listaTasks) {
+                if (task.data()['finished'] == false) {
+                  listaAux.add(task);
+                }
+              }
+            }
+            listaTasks = listaAux;
+          }
+
+          listaTasks
+              .sort((a, b) => a[ordenarDropdown].compareTo(b[ordenarDropdown]));
+          if (ordenarSeta) {
+            listaTasks = listaTasks.reversed.toList();
+          }
+
+          listaAux = [];
+          if (pesquisar.isNotEmpty) {
+            for (var task in listaTasks) {
+              if (task
+                  .data()['name']
+                  .toLowerCase()
+                  .contains(pesquisar.toLowerCase())) {
+                listaAux.add(task);
+              }
+            }
+            listaTasks = listaAux;
+          }
+
+          return MyListView(lista: listaTasks);
         },
       ),
       floatingActionButton: FloatingActionButton(

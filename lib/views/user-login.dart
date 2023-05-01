@@ -1,3 +1,4 @@
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
@@ -20,7 +21,7 @@ class _UserLoginPageState extends State<UserLoginPage> {
     }
 
     setState(() {
-      email = value;
+      password = value;
     });
     return null;
   }
@@ -33,28 +34,36 @@ class _UserLoginPageState extends State<UserLoginPage> {
     if (!EmailValidator.validate(value)) {
       return 'Digite um E-mail valido!';
     }
-    
+
     setState(() {
-      password = value;
+      email = value;
     });
     return null;
   }
 
   var formKey = GlobalKey<FormState>();
 
-  void logar(BuildContext context) async{
+  void logar(BuildContext context) async {
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
-      
+
       try {
         await auth.signInWithEmailAndPassword(email: email, password: password);
-      // Navigator.of(context).popAndPushNamed('/task-list'); //Talvez tenha que mudar o tipo de troca depois
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/task-list',
-        ModalRoute.withName('/'),
-      );
-      } catch (e){
-        print(e);
+        // Navigator.of(context).popAndPushNamed('/task-list'); //Talvez tenha que mudar o tipo de troca depois
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/task-list',
+          ModalRoute.withName('/'),
+        );
+      } catch (e) {
+        Fluttertoast.showToast(
+          msg: "Erro ao fazer login: ${e.toString()}",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 5,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
       }
     }
   }
@@ -115,6 +124,15 @@ class _UserLoginPageState extends State<UserLoginPage> {
               child: ElevatedButton(
                 onPressed: () => logar(context),
                 child: const Text("Logar"),
+              ),
+            ),
+            Container(
+              width: MediaQuery.of(context).size.width -
+                  40, //width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () =>
+                    Navigator.of(context).popAndPushNamed('/user-register'),
+                child: const Text("Registrar"),
               ),
             ),
           ],
