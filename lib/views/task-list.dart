@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:task_list/components/myListView.dart';
+import 'package:task_list/components/MyListView.dart';
 
 class TaskListPage extends StatefulWidget {
   @override
@@ -13,6 +13,7 @@ class _TaskListPageState extends State<TaskListPage> {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   final ordenar = ['nome', 'prioridade', 'data', 'finalizados', 'pendentes'];
+  bool logado = true;
   String ordenarDropdown = 'name';
   var ordenarSeta = false;
   var finalizados = false;
@@ -23,6 +24,9 @@ class _TaskListPageState extends State<TaskListPage> {
   @override
   void initState() {
     dropdownValue = ordenar[0];
+    if (auth.currentUser == null) {
+      logado = false;
+    }
   }
 
   @override
@@ -107,68 +111,128 @@ class _TaskListPageState extends State<TaskListPage> {
               },
             ),
           ),
-          IconButton(
-              onPressed: () => Navigator.of(context).pushNamed('/user-login'),
-              icon: const Icon(Icons.perm_identity))
+
+          //Login/Register/Logout
+          !logado
+              ? PopupMenuButton<String>(
+                  icon: const Icon(Icons.person),
+                  itemBuilder: (BuildContext context) {
+                    return ['Login', 'Cadastro'].map((e) {
+                      return PopupMenuItem<String>(
+                        value: e,
+                        child: Text(e),
+                      );
+                    }).toList();
+                  },
+                  onSelected: (String value) {
+                    switch (value) {
+                      case 'Login':
+                        setState(() {
+                          Navigator.of(context).pushNamed('/user-login');
+                        });
+                        break;
+                      case 'Cadastro':
+                        setState(() {
+                          Navigator.of(context).pushNamed('/user-register');
+                        });
+                        break;
+                      default:
+                    }
+                  },
+                )
+              : PopupMenuButton<String>(
+                  icon: const Icon(Icons.person),
+                  itemBuilder: (BuildContext context) {
+                    return ['Logout'].map((e) {
+                      return PopupMenuItem<String>(
+                        value: e,
+                        child: Text(e),
+                      );
+                    }).toList();
+                  },
+                  onSelected: (String value) {
+                    switch (value) {
+                      case 'Logout':
+                        setState(() {
+                          auth.signOut();
+                        });
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/task-list',
+                            ModalRoute.withName('/'),
+                          );
+                        break;
+                      default:
+                    }
+                  },
+                ),
         ],
       ),
-      body: StreamBuilder(
-        stream: firestore
-            .collection('tasks')
-            .where('uid', isEqualTo: auth.currentUser!.uid)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const CircularProgressIndicator();
-          }
-
-          var tasks = snapshot.data!.docs;
-
-          var listaTasks = [];
-          for (var task in tasks){
-            listaTasks.add(task);
-          }
-
-          var listaAux = [];
-          if (finalizados || pendentes) {
-            if (finalizados) {
-              for (var task in listaTasks) {
-                if (task.data()['finished'] == true) {
-                  listaAux.add(task);
+      body: !logado
+          ? const Text('Usuário não logado')
+          : StreamBuilder(
+              stream: firestore
+                  .collection('tasks')
+                  .where('uid', isEqualTo: auth.currentUser!.uid)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text(
+                      'Erro ao obter dados das tarefas: ${snapshot.error}');
+                } else if (auth.currentUser == null) {
+                  return Text('Usuário não logado');
+                } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Text('Não há tarefas a serem exibidas');
                 }
-              }
-            } else {
-              for (var task in listaTasks) {
-                if (task.data()['finished'] == false) {
-                  listaAux.add(task);
+
+                var tasks = snapshot.data!.docs;
+
+                var listaTasks = [];
+                for (var task in tasks) {
+                  listaTasks.add(task);
                 }
-              }
-            }
-            listaTasks = listaAux;
-          }
 
-          listaTasks
-              .sort((a, b) => a[ordenarDropdown].compareTo(b[ordenarDropdown]));
-          if (ordenarSeta) {
-            listaTasks = listaTasks.reversed.toList();
-          }
+                var listaAux = [];
+                if (finalizados || pendentes) {
+                  if (finalizados) {
+                    for (var task in listaTasks) {
+                      if (task.data()['finished'] == true) {
+                        listaAux.add(task);
+                      }
+                    }
+                  } else {
+                    for (var task in listaTasks) {
+                      if (task.data()['finished'] == false) {
+                        listaAux.add(task);
+                      }
+                    }
+                  }
+                  listaTasks = listaAux;
+                }
 
-          listaAux = [];
-          if (pesquisar.isNotEmpty) {
-            for (var task in listaTasks) {
-              if (task
-                  .data()['name']
-                  .toLowerCase()
-                  .contains(pesquisar.toLowerCase())) {
-                listaAux.add(task);
-              }
-            }
-            listaTasks = listaAux;
-          }
+                listaTasks.sort(
+                    (a, b) => a[ordenarDropdown].compareTo(b[ordenarDropdown]));
+                if (ordenarSeta) {
+                  listaTasks = listaTasks.reversed.toList();
+                }
 
-          return MyListView(lista: listaTasks);
-        },
-      ),
+                listaAux = [];
+                if (pesquisar.isNotEmpty) {
+                  for (var task in listaTasks) {
+                    if (task
+                        .data()['name']
+                        .toLowerCase()
+                        .contains(pesquisar.toLowerCase())) {
+                      listaAux.add(task);
+                    }
+                  }
+                  listaTasks = listaAux;
+                }
+
+                return MyListView(lista: listaTasks);
+              },
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.of(context).pushNamed('/task-create'),
         child: const Icon(Icons.add),

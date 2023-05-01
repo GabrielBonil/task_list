@@ -25,7 +25,6 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
   late DateTime dataSelecionada;
   late TextEditingController dataController = TextEditingController(
       text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
-  // late TextEditingController dataController;
 
   //InitState para selecionar a data de hoje/agora e deixar pré-fixado a prioridade baixa.
   @override
@@ -119,7 +118,7 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
               validator: validarTarefa,
             ),
 
-            // DropdownButtonFormField(items: items, onChanged: onChanged),
+            //Prioridade
             DropdownButtonFormField<String>(
               value: valorPrioridade,
               items: itens.map((e) {
@@ -138,19 +137,8 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
                 labelText: 'Prioridade',
               ),
             ),
-
-            //DataPicker
-            // Text(
-            //   'Data selecionada: ${dataSelecionada.day}/${dataSelecionada.month}/${dataSelecionada.year}',
-            //   style: TextStyle(fontSize: 24),
-            // ),
-            // SizedBox(height: 20),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     selecionarData(context);
-            //   },
-            //   child: Text('Selecionar data'),
-            // ),
+            
+            //Data
             TextFormField(
               readOnly: true,
               controller: dataController,
@@ -169,7 +157,7 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
             ),
 
             // Botão salvar
-            Container(
+            SizedBox(
               width: MediaQuery.of(context).size.width -
                   40, //width: double.infinity,
               child: ElevatedButton(

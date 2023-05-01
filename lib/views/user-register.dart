@@ -75,7 +75,7 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Register"),
+        title: const Text("Cadastrar"),
       ),
       body: Form(
         key: formKey,
@@ -84,7 +84,7 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
             //E-mail
             TextFormField(
               maxLength: 50,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 // icon: Icon(Icons.people_alt_rounded),
                 hintText: "E-mail",
                 enabledBorder: UnderlineInputBorder(
@@ -102,7 +102,7 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
               maxLength: 50,
               decoration: InputDecoration(
                 // icon: Icon(Icons.lock),
-                enabledBorder: UnderlineInputBorder(
+                enabledBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.black),
                 ),
                 hintText: "Senha",
@@ -121,15 +121,15 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
             ),
 
             //Botão Registrar
-            Container(
+            SizedBox(
               width: MediaQuery.of(context).size.width -
                   40, //width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => register(context),
-                child: Text("Registrar"),
+                child: const Text("Registrar"),
               ),
             ),
-            Container(
+            SizedBox(
               width: MediaQuery.of(context).size.width -
                   40, //width: double.infinity,
               child: ElevatedButton(

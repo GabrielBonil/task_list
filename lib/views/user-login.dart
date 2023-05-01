@@ -118,7 +118,7 @@ class _UserLoginPageState extends State<UserLoginPage> {
             ),
 
             //Botão Logar
-            Container(
+            SizedBox(
               width: MediaQuery.of(context).size.width -
                   40, //width: double.infinity,
               child: ElevatedButton(
@@ -126,7 +126,7 @@ class _UserLoginPageState extends State<UserLoginPage> {
                 child: const Text("Logar"),
               ),
             ),
-            Container(
+            SizedBox(
               width: MediaQuery.of(context).size.width -
                   40, //width: double.infinity,
               child: ElevatedButton(
